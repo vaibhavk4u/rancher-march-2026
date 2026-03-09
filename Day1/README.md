@@ -279,3 +279,12 @@ We need to edit the /etc/hosts file on all the VMs and append their IP at the en
 192.168.122.2 worker1.k8s.tektutor.org
 192.168.122.160 worker2.k8s.tektutor.org
 </pre>
+
+
+From your host machine, try pinging the IP address of all 3 vms
+```
+ping master
+ping worker1
+ping worker2
+```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ccad46a0-c2c6-4779-8faf-e7ba207bffa7" />
