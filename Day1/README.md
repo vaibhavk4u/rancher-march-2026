@@ -1,4 +1,4 @@
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/66da13e7-3389-4a3f-ba0a-5842b81dacdc" /><img width="1332" height="959" alt="image" src="https://github.com/user-attachments/assets/ceeb0bca-3698-42bf-ab99-f5cd56aca87b" /><img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/917066dd-eb05-45aa-a55d-f94d34ef8dd8" /># Day 1
+# Day 1
 
 ## Lab - Install Podman in RHEL v9.7
 ```
@@ -155,7 +155,7 @@ sudo virt-install \
 --vcpus 4 \
 --disk path=/var/lib/libvirt/images/rhel9-rke2-master.qcow2,size=30 \
 --os-variant rhel9.7 \
---location /var/lib/libvirt/images/rhel-9.7-x86_64-dvd.iso \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64-boot.iso \
 --network network=default \
 --graphics vnc
 ```
@@ -202,7 +202,7 @@ sudo virt-install \
 --vcpus 4 \
 --disk path=/var/lib/libvirt/images/rhel9-rke2-worker1.qcow2,size=30 \
 --os-variant rhel9.7 \
---location /var/lib/libvirt/images/rhel-9.7-x86_64-dvd.iso \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64-boot.iso \
 --network network=default \
 --graphics vnc
 ```
@@ -233,7 +233,7 @@ sudo virt-install \
 --vcpus 4 \
 --disk path=/var/lib/libvirt/images/rhel9-rke2-worker2.qcow2,size=30 \
 --os-variant rhel9.7 \
---location /var/lib/libvirt/images/rhel-9.7-x86_64-dvd.iso \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64-boot.iso \
 --network network=default \
 --graphics vnc
 ```
