@@ -37,3 +37,6 @@ sudo usermod -aG kvm $USER
 lsmod | grep kvm
 virsh list --all
 ```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/a3767189-0598-4853-99f0-e7ddc2737956" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/e20d5f26-4ebc-4591-8383-d5c444dc8556" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/328833a6-64f8-4071-8492-3e5d46fbe83c" />
