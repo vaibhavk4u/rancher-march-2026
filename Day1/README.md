@@ -288,3 +288,24 @@ ping worker1
 ping worker2
 ```
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ccad46a0-c2c6-4779-8faf-e7ba207bffa7" />
+
+
+From your RHEL host machine on the cloud, try doing ssh to master vm ( Terminal tab 1 )
+```
+ssh root@master
+```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/e1288546-5981-4de3-9452-0eacc7852fc0" />
+
+
+From your RHEL host machine on the cloud, try doing ssh to worker1 vm ( Terminal tab 2 )
+```
+ssh root@worker1
+```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/d04f8dae-cd1f-4602-a793-f93d18debf10" />
+
+
+From your RHEL host machine on the cloud, try doing ssh to worker2 vm ( Terminal tab 2 )
+```
+ssh root@worker2
+```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/03a1911b-33c0-4413-95f7-804d844afc93" />
