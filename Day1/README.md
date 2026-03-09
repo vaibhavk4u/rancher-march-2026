@@ -466,3 +466,15 @@ kubectl get ingress -n cattle-system
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/b0afd292-b754-429a-94b6-109ab8a3093a" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/689afab1-d4fa-4286-854f-b6ffa6bf1f02" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/bf47983a-7fe5-4376-997a-eb8d023878d3" />
+
+From your Cloud Host Machine, open your firefox web browser
+<pre>
+https://master.k8s.tektutor.org  
+</pre>
+
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/b79d6cc6-63eb-4f1c-a0e4-7532eb84f37c" />
+Click Accept the Risk and Continue
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/4b95f2ed-f022-4ac8-98ab-22689fadc88d" />
+Type the current password as "admin"
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ac2b5d2c-a9ff-4f19-bf19-f12116797052" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fc3726b6-5043-4c95-9e3e-94499d9d863f" />
