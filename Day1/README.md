@@ -270,6 +270,9 @@ ifconfig
 ifconfig
 ```
 
+On Cloud Host machine, edit the /etc/hosts and type all your VM IP Addresses as shown below
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/aeabc249-f5c2-4712-b9fa-7e9f52ac792f" />
+
 We need to edit the /etc/hosts file on all the VMs and append their IP at the end of the file as shown below
 <pre>
 192.168.122.90 master.k8s.tektutor.org
