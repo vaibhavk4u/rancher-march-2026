@@ -337,7 +337,7 @@ cat /var/lib/rancher/rke2/server/node-token
 ```
 systemctl stop firewalld
 
-curl -sfL https://get.rke2.io | INSTLL_RKE2_TYPE="agent" sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
 
 systemctl enable rke2-agent.service
 
@@ -354,4 +354,12 @@ token : <paste-your-node-token-from-server-vm>
 Now your /etc/rancher/rke2/config.yaml should look as shown below
 ```
 cat /etc/rancher/rke2/config.yaml
+
+systemctl start rke2-agent.service
+journalctl -u rke2-agent -f
 ```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/67de959d-940c-4d1f-a4da-aa4e8dd167db" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/c29cdf19-7185-4fad-b117-a66e89839295" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/59244d05-c12d-47be-97d4-b35fbfe136b1" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/a1e3222c-476c-4510-ab14-641822198f77" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/8eacc961-25d1-4dfb-8113-6e9b24048fee" />
