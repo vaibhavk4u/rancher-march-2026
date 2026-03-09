@@ -1,4 +1,4 @@
-# Day 1
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/c9f76aac-a54e-45fd-adca-cfa5d0a5df4d" /># Day 1
 
 ## Lab - Install Podman in RHEL v9.7
 ```
@@ -459,3 +459,7 @@ helm install rancher rancher-latest/rancher \
 kubectl get pods -n cattle-system
 kubectl get ingress -n cattle-system
 ```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fac89b99-d806-4f5f-9270-a83b450752b8" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/dca3130c-f7ff-42fc-bd76-7dd1e401ff3d" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9047cc9c-e47b-4315-8b80-ec786e9a34b6" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/85b6599c-aa78-4f4d-bdf5-0f6f0e2b1e2b" />
