@@ -13,6 +13,27 @@ podman version
 
 ## Lab - Install KVM Hypervisor in RHEL 9.7
 ```
-# Check if virtualization is supported on your lab machine
+sudo su -
+
+# Check if virtualization is supported on your lab machine, if you see vmx/svm it is supported
 egrep -c '(vmx|svm)' /proc/cpuinfo
+
+# Enable RHEL Repositories
+subscription-manager repos \
+--enable=rhel-9-for-x86_64-baseos-rpms \
+--enable=rhel-9-for-x86_64-appstream-rpms
+
+dnf update -y
+
+dnf groupinstall "Virtualization Host" -y
+
+systemctl enable --now libvirtd
+systemctl status libvirtd
+
+usermod -aG libvirt $USER
+sudo usermod -aG kvm $USER
+
+# Verify if KVM is installed properly
+lsmod | grep kvm
+virsh list --all
 ```
