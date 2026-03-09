@@ -47,3 +47,64 @@ dnf install -y virt-manager
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/0c2a7d4c-2c40-4f85-8a5b-af544826ed73" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/28b1db70-6ddd-4175-9447-c8f46120cd8b" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fff40404-90a4-4df4-aa00-a384b124317d" />
+
+
+## Info - Kubernetes
+<pre>
+- it is one of the Container Orchestration Platforms
+- it is developed in Golang by Google
+- it is opensource and free for personal & commercial use
+- any containerized application workloads can be deployed into Kubernetes a.k.a k8s
+- it generally as group(cluster) of machines/nodes
+- there are 2 types of nodes
+  - Master node ( Control Plane components will be running here )
+  - Worker node ( user application workloads will be running here )
+- Kubernetes Control Plane
+  1. API Server
+  2. etcd database
+  3. Scheduler
+  4. Controller Managers ( a group of many Controllers )
+- it supports only Command-line interface
+- supports extending its Kubernetes API(features) by adding
+  - Custom Resources by defining Custom Resource Definitions a.k.a CRD
+  - Custom Controller to manage your Custom Resources
+  - it is generally installed as Kubernetes Operators
+  - Kubernetes Operators
+    - a packaged CRs(CRDs) with many custom controllers to manage the CRs
+- we can only deploy application for which there is a Container Image
+- it is your responsibility to build a custom container image with your custom application + all its dependencies
+- the client tool used is kubectl
+- with the help kubectl we can interact with Kubernetes cluster
+- kubeadm
+  - is the administration client tool
+  
+</pre>  
+
+## Info - Openshift
+<pre>
+- it is a Container Orchestration Platform
+- it is developed by Red Hat on top of opensource Kubernetes
+- Red Hat has added many additional features on top of Kubernetes
+  - Web Console
+  - User Management 
+  - Internal Container Registry
+  - Many new features
+    - S2I - Source to Image i.e one can deploy application from source code coming from Version Control
+  - Route
+  - Build, BuildConfig, DeploymentConfig
+- Openshift is a superset of Kubernetes
+- Official definition - OpenShift is Red Hat's Kubernetes Distribution
+- all the features that works in k8s will also work in Openshift
+- OpenShift support many additional features on top of what is already supported by Kubernetes
+- Openshift added additional features on top of K8s using the K8s Operators 
+- Openshift Operators
+  - one or more Custom Resources defined as CRDs
+  - one or more Custom Controllers that manages the custom resources (CRs)
+- kubectl and oc i.e client tools can be used be in Openshift to manage your application deployments
+- oc Openshift client tool combines kubectl and kubeadm with many additional features 
+</pre>  
+
+## Info - Rancher Overview
+<pre>
+- it orchestrates/manages Kubernetes Cluster  
+</pre>
