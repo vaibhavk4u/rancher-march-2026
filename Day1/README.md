@@ -149,7 +149,7 @@ sudo virt-install \
 --vcpus 4 \
 --disk path=/var/lib/libvirt/images/rhel9-rke2-master.qcow2,size=30 \
 --os-variant rhel9.7 \
---location /var/lib/libvirt/images/rhel-9.7-x86_64.dvd.iso \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64-dvd.iso \
 --network network=default \
 --graphics vnc
 ```
@@ -163,7 +163,7 @@ sudo virt-install \
 --vcpus 4 \
 --disk path=/var/lib/libvirt/images/rhel9-rke2-worker1.qcow2,size=30 \
 --os-variant rhel9.7 \
---location /var/lib/libvirt/images/rhel-9.7-x86_64.dvd.iso \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64-dvd.iso \
 --network network=default \
 --graphics vnc
 ```
@@ -177,7 +177,7 @@ sudo virt-install \
 --vcpus 4 \
 --disk path=/var/lib/libvirt/images/rhel9-rke2-worker2.qcow2,size=30 \
 --os-variant rhel9.7 \
---location /var/lib/libvirt/images/rhel-9.7-x86_64.dvd.iso \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64-dvd.iso \
 --network network=default \
 --graphics vnc
 ```
