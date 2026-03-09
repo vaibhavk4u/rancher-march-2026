@@ -400,4 +400,12 @@ chmod +x ./kubectl
 mv ./kubectl /usr/bin
 kubectl version
 
+kubectl get nodes
+
+mkdir -p /root/.kube
+cp /etc/rancher/rke2/rke2.yaml /root/.kube/config
+kubectl get nodes
 ```
+
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/f69bb8ec-7eef-451c-b975-4a6e72762685" />
+
