@@ -254,3 +254,22 @@ systemctl enable chronyd
 systemctl start chronyd
 systemctl status chronyd
 ```
+
+Find the IP address of master, worker1 and worker2 VMs
+```
+# In Master VM terminal
+ifconfig
+
+# In Worker1 VM terminial
+ifconfig
+
+# In Worker2 VM terminal
+ifconfig
+```
+
+We need to edit the /etc/hosts file on all the VMs and append their IP at the end of the file as shown below
+<pre>
+192.168.122.90 master.k8s.tektutor.org
+192.168.122.2 worker1.k8s.tektutor.org
+192.168.122. worker2.k8s.tektutor.org
+</pre>
