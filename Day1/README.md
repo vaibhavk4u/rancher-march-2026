@@ -478,3 +478,4 @@ Click Accept the Risk and Continue
 Type the current password as "admin" not "admin@123" the screenshot shows wrong password
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ac2b5d2c-a9ff-4f19-bf19-f12116797052" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fc3726b6-5043-4c95-9e3e-94499d9d863f" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/c71f0960-5e12-4b0c-9488-fed29bb866ea" />
