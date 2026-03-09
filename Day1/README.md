@@ -138,3 +138,46 @@ dnf install -y virt-manager
   - you could use any managed Kubernetes cluster running in public cloud
   - you could use your already existing Kubernetes cluster in on-prem data-centers 
 </pre>
+
+## Lab - Installing RKE2 Cluster with single master and two worker nodes
+
+#### Create a master node Virtual machine with KVM
+```
+sudo virt-install \
+--name rhel9-rke2-master \
+--ram 8192 \
+--vcpus 4 \
+--disk path=/var/lib/libvirt/images/rhel9-rke2-master.qcow2,size=30 \
+--os-variant rhel9.7 \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64.dvd.iso \
+--network network=default \
+--graphics vnc
+```
+
+
+#### Create the worker1 VM in KVM
+```
+sudo virt-install \
+--name rhel9-rke2-worker1 \
+--ram 8192 \
+--vcpus 4 \
+--disk path=/var/lib/libvirt/images/rhel9-rke2-worker1.qcow2,size=30 \
+--os-variant rhel9.7 \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64.dvd.iso \
+--network network=default \
+--graphics vnc
+```
+
+
+#### Create the worker2 VM in KVM
+```
+sudo virt-install \
+--name rhel9-rke2-worker2 \
+--ram 8192 \
+--vcpus 4 \
+--disk path=/var/lib/libvirt/images/rhel9-rke2-worker2.qcow2,size=30 \
+--os-variant rhel9.7 \
+--location /var/lib/libvirt/images/rhel-9.7-x86_64.dvd.iso \
+--network network=default \
+--graphics vnc
+```
