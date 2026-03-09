@@ -463,3 +463,6 @@ kubectl get ingress -n cattle-system
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/dca3130c-f7ff-42fc-bd76-7dd1e401ff3d" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9047cc9c-e47b-4315-8b80-ec786e9a34b6" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/85b6599c-aa78-4f4d-bdf5-0f6f0e2b1e2b" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/b0afd292-b754-429a-94b6-109ab8a3093a" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/689afab1-d4fa-4286-854f-b6ffa6bf1f02" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/bf47983a-7fe5-4376-997a-eb8d023878d3" />
