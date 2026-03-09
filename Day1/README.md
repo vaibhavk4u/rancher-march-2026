@@ -46,3 +46,4 @@ dnf install -y virt-manager
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/aa9fde0f-903d-41d1-819c-474f03c0389d" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/0c2a7d4c-2c40-4f85-8a5b-af544826ed73" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/28b1db70-6ddd-4175-9447-c8f46120cd8b" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fff40404-90a4-4df4-aa00-a384b124317d" />
