@@ -141,6 +141,12 @@ dnf install -y virt-manager
 
 ## Lab - Installing RKE2 Cluster with single master and two worker nodes
 
+#### Copy the RHEL 9.7 iso to libvirt image folder
+```
+cp /home/palmeto/Downloads/rhel-9.7-x86_64-boot.iso /var/lib/libvirt/images/
+ls -l /var/lib/libvirt/images/
+```
+
 #### Create a master node Virtual machine with KVM
 ```
 sudo virt-install \
