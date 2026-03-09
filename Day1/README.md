@@ -363,3 +363,30 @@ journalctl -u rke2-agent -f
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/59244d05-c12d-47be-97d4-b35fbfe136b1" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/a1e3222c-476c-4510-ab14-641822198f77" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/8eacc961-25d1-4dfb-8113-6e9b24048fee" />
+
+#### Setup the worker2 RKE2 node Terminal Tab which is already open
+```
+systemctl stop firewalld
+
+curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+
+systemctl enable rke2-agent.service
+
+mkdir -p /etc/rancher/rke2/
+touch /etc/rancher/rke2/config.yaml
+```
+
+Paste the below in the file /etc/rancher/rke2/config.yaml
+<pre>
+server: https://master.k8s.tektutor.org:9345
+token : paste-your-node-token-from-server-vm 
+</pre>
+
+Now your /etc/rancher/rke2/config.yaml should look as shown below
+```
+cat /etc/rancher/rke2/config.yaml
+
+systemctl start rke2-agent.service
+journalctl -u rke2-agent -f
+```
+
