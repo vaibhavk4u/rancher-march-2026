@@ -358,7 +358,7 @@ sudo openssl genrsa -out /etc/rancher/ssl/rancher.key 4096
 
 Create a file named rancher-openssl.cnf, we just need to paste the command 
 and the command will automatically create the file for us
-<pre>
+```
 sudo tee /etc/rancher/ssl/rancher-openssl.cnf > /dev/null <<EOF
 [ req ]
 default_bits       = 4096
@@ -381,7 +381,7 @@ subjectAltName = @alt_names
 [ alt_names ]
 DNS.1 = rancher.k8s.tektutor.org
 EOF 
-</pre>
+```
 
 Let's generate the self-signed certificate
 ```
