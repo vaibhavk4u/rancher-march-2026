@@ -14,12 +14,12 @@ podman machine init rancher --cpus 4 --memory 8192 --disk-size 50
 podman machine start rancher
 podman machine ssh rancher
 sudo hostnamectl set-hostname rancher.tektutor.org
+hostname
 ```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/38d19e7a-57c4-400a-a9f0-cbcf80e6a4bb" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/06f15de2-6090-4eb3-a4d1-6a50021ea6c0" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/49b98704-0cc1-4690-b0d9-6f82fbde6e4d" />
 
-Download the RKE2 binaries inside the rancher VM
-```
-curl -sfL https://get.rke2.io | sudo sh -
-```
 
 Create configuration directories
 ```
@@ -54,18 +54,22 @@ spec:
 EOF
 ```
 
+Download RKE2 binaries
+```
+curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_METHOD="tar" sh -
+```
+
 Start the RKE2 Cluster
 ```
+sudo systemctl daemon-reload
 sudo systemctl enable rke2-server.service
 sudo systemctl start rke2-server.service
+sudo systemctl status rke2-server.service
+sudo rke2 server status
 ```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/b2a77898-8bb6-4d64-8285-c99ba446d5a7" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/4e18cd88-ae73-4fdd-99de-a8e17ad16c11" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/daac684a-afaf-4b49-a2b3-496de60559cc" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/7d3d1764-ff40-49a3-8480-451195f19fc9" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/7d6e138b-eb9b-49be-8f39-3aa5cd4f242f" />
 
-Verify your Upstream RKE2 Cluster
-```
-# Set up your environment paths
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
-export PATH=$PATH:/var/lib/rancher/rke2/bin
-
-# Watch the pods come online
-watch kubectl get pods -A
-```
