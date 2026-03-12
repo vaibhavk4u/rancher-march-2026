@@ -13,6 +13,7 @@ Create a lightweight VM using podman
 podman machine init rancher --cpus 4 --memory 8192 --disk-size 50
 podman machine start rancher
 podman machine ssh rancher
+sudo hostnamectl set-hostname rancher.tektutor.org
 ```
 
 Download the RKE2 binaries inside the rancher VM
