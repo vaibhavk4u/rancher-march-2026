@@ -1,5 +1,44 @@
 # Day 4
 
+## Info - Cilium Network Fabric
+Cilium Overview
+<pre>
+- Cilium is a networking, observability, and security solution for Kubernetes that leverages eBPF 
+- eBPF stans for Extended Berkeley Packet Filter
+- Unlike traditional CNIs that rely on IPtables, Cilium inserts logic directly into the Linux 
+  kernel for higher performance and scalability
+</pre>
+
+Cilium Components
+<pre>
+1. Cilium Agent - runs on every node ( deployed as DaemonSet )
+2. Cilium Operator 
+   - Handles the allocation of IP blocks to nodes
+   - Cleans up stale state or terminated endpoints
+   - Manages shared services across different clusters
+3. Cilium CNI Plugin
+   - a lightweight binary residing on the node's host filesystem
+   - when a pod is scheduled, the Kubelet calls this plugin
+   - creates the virtual ethernet pair (veth) for the pod and connects it 
+     to the host networking stack, then hands off the rest of the configuration to the Cilium Agent
+4. Hubble
+   - provides observability and is built on top of Cilium
+   - Hubble Server
+     - Runs inside the Cilium Agent
+     - it collects flow logs and metrics via eBPF
+   - Hubble Relay
+     - centralized component that aggregates data from all nodes to provide a cluster-wide view
+   - Hubble UI
+     - graphical dashboard to visualize network traffic, dependencies, and communication maps
+   - The eBPF Engine
+     - Intercepts packets before it is seen by the kernel
+     - avoids the overhead of the "conntrack" table and IPtables rules
+     - provides Layer 7 (HTTP/gRPC) visibility and filtering
+5. Key-Value Store
+   - Optional component, in simpler setup the etcd comes in Kubernetes can be used by Cilium
+   - in large-scale environments often use an external etcd for better performance.
+</pre>
+
 ## Lab - Rancher with two clusters
 
 List the clusters from the rancher vm
