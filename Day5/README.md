@@ -101,7 +101,7 @@ sudo virsh list --all
 192.168.122.123 cluster2.tektutor.org
 ```
 
-#### In the rancher VM
+### In the rancher VM
 ```
 ssh root@rancher
 
