@@ -119,6 +119,25 @@ disable:
 EOF
 ```
 
+#### Enable Traefic - Create this file /var/lib/rancher/rke2/server/manifests/traefik-install.yaml
+```
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  chart: traefik
+  repo: https://traefik.github.io/charts
+  targetNamespace: kube-system
+  valuesContent: |
+    ingressClass:
+      enabled: true
+      isDefaultClass: true
+    service:
+      type: LoadBalancer
+```
+
 #### Enable Hubble
 ```
 cat <<EOF | sudo tee /var/lib/rancher/rke2/server/manifests/rke2-cilium-config.yaml
@@ -292,6 +311,43 @@ net.bridge.bridge-nf-call-ip6tables = 1
 net.ipv4.ip_forward                 = 1
 EOF
 sudo sysctl --system
+```
+
+### In the rancher VM
+```
+ssh root@rancher
+
+sudo mkdir -p /etc/rancher/rke2/
+sudo mkdir -p /var/lib/rancher/rke2/server/manifests/
+```
+
+#### Define Cluster configurations
+```
+cat <<EOF | sudo tee /etc/rancher/rke2/config.yaml
+cni: cilium
+write-kubeconfig-mode: "0644"
+disable:
+  - rke2-ingress-nginx
+EOF
+```
+
+#### Enable Traefic - Create this file /var/lib/rancher/rke2/server/manifests/traefik-install.yaml
+```
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  chart: traefik
+  repo: https://traefik.github.io/charts
+  targetNamespace: kube-system
+  valuesContent: |
+    ingressClass:
+      enabled: true
+      isDefaultClass: true
+    service:
+      type: LoadBalancer
 ```
 
 #### Download RKE2 binaries
