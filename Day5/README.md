@@ -208,5 +208,5 @@ kubectl -n cattle-system rollout restart deployment rancher
 openssl s_client -connect rancher.tektutor.org:443 -servername rancher.tektutor.org </dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
 
 sudo systemctl restart rke2-server
-sudo journalctl -u rancher-system-agent -f
 ```
+
