@@ -91,6 +91,7 @@ kubectl get crds | grep cert-manager
 ```
 
 #### Install helm
+```
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -120,6 +121,7 @@ helm install rancher rancher-latest/rancher \
 kubectl get pods -n cattle-system
 kubectl get ingress -n cattle-system
 ```
+
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fe35a603-6cb8-4042-8082-fd7e66804bbc" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/f1e19583-2456-45aa-84c3-548a742d000e" />
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/6611c28a-bdee-4f96-81b6-2deee56dd49f" />
@@ -208,4 +210,3 @@ openssl s_client -connect rancher.tektutor.org:443 -servername rancher.tektutor.
 sudo systemctl restart rke2-server
 sudo journalctl -u rancher-system-agent -f
 ```
-
