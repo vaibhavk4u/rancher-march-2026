@@ -198,12 +198,6 @@ kubectl get pods -n cattle-system
 kubectl get ingress -n cattle-system
 ```
 
-#### Make sure the rancher vm IP is added to your host machine /etc/hosts before accessing the Rancher Webconsole
-```
-echo "192.168.127.2 rancher.tektutor.org" >> /etc/hosts
-cat /etc/hosts
-```
-
 #### Accessing your Rancher Webconsole
 <pre>
 https://rancher.tektutor.org  
