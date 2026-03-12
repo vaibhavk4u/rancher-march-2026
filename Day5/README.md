@@ -194,7 +194,7 @@ sudo chown root:root /etc/rancher/rke2/ssl/tls.*
 sudo chmod 600 /etc/rancher/rke2/ssl/tls.key
 
 kubectl -n cattle-system rollout restart deployment rancher
-kubectl -n cattle-system create secret tls tls-rancher \
+sudo kubectl -n cattle-system create secret tls tls-rancher \
   --cert=/etc/rancher/rke2/ssl/tls.crt \
   --key=/etc/rancher/rke2/ssl/tls.key \
   --dry-run=client -o yaml | kubectl apply -f -
