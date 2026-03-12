@@ -114,6 +114,8 @@ sudo mkdir -p /var/lib/rancher/rke2/server/manifests/
 cat <<EOF | sudo tee /etc/rancher/rke2/config.yaml
 cni: cilium
 write-kubeconfig-mode: "0644"
+disable:
+  - rke2-ingress-nginx
 EOF
 ```
 
