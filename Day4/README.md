@@ -53,3 +53,40 @@ kubectl logs -f -n cattle-system -l app=cattle-cluster-agent
 <img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/7e990f6f-73b0-4275-ba7c-2a323abac13c" />
 <img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/46ccf8f1-d96f-4b8e-a408-9820cfeec297" />
 
+
+## Lab - Longhorn ( Dynamically Provisioning Persistent Volume using Longhorn StorageClass )
+
+Rootcaus of the longhorn issue
+<pre>
+- My DownStream Cluster disk only had 4.3GB free space leftover, but longhorn was trying to reserver 5.5GB
+- Configured the longhorn to reserver only 2GB
+- Also updated the threshold to 10% as the default Longhorn thread is 25%
+- My disk was 77% full, leaving only 23% free disk, which is way below the 25% threshold longhorn has set
+- I reduced the threshold to 10%, which fixed the problem
+</pre>
+
+```
+cd ~
+git clone https://github.com/tektutor/rancher-march-2026.git
+cd rancher-march-2026
+cd Day4/wordpress-with-configmaps-and-secrets
+ls -l
+
+kubectl apply -f wordpress-cm.yml
+kubectl apply -f wordpress-secrets.yml
+kubectl apply -f mysql-pvc.yml
+kubectl apply -f mysql-deploy.yml
+
+kubectl get pv
+kubectl get pvc
+kubectl get po
+
+kubectl logs mysql-56fc85887b-pfhlp
+```
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/53783838-537c-411c-a3be-c7023d750c3f" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/c594e1fe-ea4c-4085-813d-96a624baff4f" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/21b31f8b-f5a0-446f-8ab1-1a54218b4def" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/21562443-73f4-4b72-8b1a-03afe152f5b0" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/3239e0c1-df5a-4a5c-aa0c-f5030b1a8950" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/c6519f3b-3126-4273-a3b0-73e598ff87d0" />
+
