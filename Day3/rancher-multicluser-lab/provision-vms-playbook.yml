@@ -1,0 +1,56 @@
+---
+- name: 
+
+- name: Provision Rancher Lab VMs
+  hosts: localhost
+  become: true
+  vars:
+    base_image: "/var/lib/libvirt/images/ubuntu24.04.iso"
+    vm_list:
+      - { name: 'rancher-vm', memory: 8192, vcpus: 4, disk: 20 }
+      - { name: 'cluster1-master', memory: 4096, vcpus: 4, disk: 20 }
+      - { name: 'cluster1-worker', memory: 4096, vcpus: 4, disk: 20 }
+      - { name: 'cluster2-master', memory: 4096, vcpus: 4, disk: 20 }
+      - { name: 'lb-vm', memory: 2048, vcpus: 2, disk: 20 }
+
+  tasks:
+    - name: Ensure required packages are installed
+      dnf:
+        name: [qemu-kvm, libvirt, virt-install, genisoimage]
+        state: present
+
+    - name: Create cloud-localds wrapper
+      copy:
+        dest: /usr/local/bin/cloud-localds
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          genisoimage -output "$1" -volid cidata -joliet -rock "$2"
+
+    - name: Create Disk Images
+      shell: |
+        qemu-img create -f /var/lib/libvirt/images/{{ item.name }}.qcow2 {{ item.disk }}G
+      loop: "{{ vm_list }}"
+
+    - name: Render cloud-init and Generate ISO
+      block:
+        - name: Render template
+          template:
+            src: templates/cloud-init.yml.j2
+            dest: "/tmp/{{ item.name }}-userdata"
+          loop: "{{ vm_list }}"
+          vars:
+            vm_name: "{{ item.name }}"
+        
+        - name: Build ISO
+          command: "cloud-localds /var/lib/libvirt/images/{{ item.name }}-cloudinit.iso /tmp/{{ item.name }}-userdata"
+          loop: "{{ vm_list }}"
+
+    - name: Create and start VMs
+      command: >
+        virt-install --name {{ item.name }} --memory {{ item.memory }} --vcpus {{ item.vcpus }}
+        --cdrom /var/lib/libvirt/images/ubuntu-24.04.iso
+        --disk /var/lib/libvirt/images/{{ item.name }}-cloudinit.iso,device=cdrom
+        --os-variant ubuntu24.04 --network network=default --graphics none --import --noautoconsole
+      loop: "{{ vm_list }}"
+

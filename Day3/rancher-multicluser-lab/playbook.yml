@@ -1,0 +1,94 @@
+---
+- name: Provision Rancher Lab VMs (Ubuntu 24.04)
+  hosts: localhost
+  become: true
+  vars:
+    template_dir: "templates"
+    # This must be the .qcow2 cloud image you just downloaded
+    base_image_path: "/var/lib/libvirt/images/ubuntu-base.qcow2"
+    vm_list:
+      - { name: 'rancher-vm', memory: 8192, vcpus: 4, disk: 20, hostname: 'rancher.tektutor.org', ip: '192.168.122.10' }
+      - { name: 'cluster1-master', memory: 4096, vcpus: 4, disk: 20, hostname: 'cluster1-master.tektutor.org', ip: '192.168.122.11' }
+      - { name: 'cluster1-worker', memory: 4096, vcpus: 4, disk: 20, hostname: 'cluster1-worker.tektutor.org', ip: '192.168.122.12' }
+      - { name: 'cluster2-master', memory: 4096, vcpus: 4, disk: 20, hostname: 'cluster2-master.tektutor.org', ip: '192.168.122.13' }
+      - { name: 'lb-vm', memory: 4096, vcpus: 2, disk: 20, hostname: 'lb.tektutor.org', ip: '192.168.122.14' }
+
+  tasks:
+    - name: Install virtualization and imaging tools
+      package:
+        name:
+          - libvirt
+          - virt-install
+          - qemu-kvm
+          - genisoimage
+        state: present
+
+    - name: Ensure libvirtd is active
+      systemd:
+        name: libvirtd
+        state: started
+        enabled: true
+
+    - name: Cleanup existing Lab environments
+      shell: |
+        virsh destroy {{ item.name }} || true
+        virsh undefine {{ item.name }} --remove-all-storage || true
+      loop: "{{ vm_list }}"
+      changed_when: false
+
+    - name: Create VM disks using Ubuntu Backing File
+      shell: |
+        qemu-img create -f qcow2 -b {{ base_image_path }} -F qcow2 /var/lib/libvirt/images/{{ item.name }}.qcow2 {{ item.disk }}G
+      loop: "{{ vm_list }}"
+
+    - name: Create temporary directory for cloud-init files
+      file:
+        path: "/tmp/cloud-init/{{ item.name }}"
+        state: directory
+      loop: "{{ vm_list }}"
+
+    - name: Render cloud-init configs
+      template:
+        src: "{{ template_dir }}/{{ item.1.src }}"
+        dest: "/tmp/cloud-init/{{ item.0.name }}/{{ item.1.dest }}"
+      loop: "{{ vm_list | product([{'src': 'cloud-init.yml.j2', 'dest': 'user-data'}, {'src': 'meta-data.yml.j2', 'dest': 'meta-data'}]) | list }}"
+      vars:
+        outer_item: "{{ item.0 }}"
+
+    - name: Build Cloud-Init ISOs
+      shell: |
+        genisoimage -output /var/lib/libvirt/images/{{ item.name }}-cloud-init.iso \
+        -volid cidata -joliet -rock \
+        /tmp/cloud-init/{{ item.name }}/user-data \
+        /tmp/cloud-init/{{ item.name }}/meta-data
+      loop: "{{ vm_list }}"
+
+    - name: Provision and Launch Ubuntu VMs
+      shell: >
+        virt-install
+        --name {{ item.name }}
+        --memory {{ item.memory }}
+        --vcpus {{ item.vcpus }}
+        --disk path=/var/lib/libvirt/images/{{ item.name }}.qcow2,bus=virtio
+        --disk path=/var/lib/libvirt/images/{{ item.name }}-cloud-init.iso,device=cdrom
+        --os-variant ubuntu24.04
+        --network network=default
+        --graphics none
+        --import
+        --noautoconsole
+      loop: "{{ vm_list }}"
+
+    - name: Update local /etc/hosts for name resolution
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }} {{ item.hostname }} {{ item.name }}"
+        state: present
+      loop: "{{ vm_list }}"
+
+    - name: Wait for SSH to respond
+      wait_for:
+        host: "{{ item.hostname }}"
+        port: 22
+        delay: 10
+        timeout: 180
+      loop: "{{ vm_list }}"

@@ -1,0 +1,21 @@
+[all]
+rancher_vm ansible_host=192.168.122.129
+cluster1_master ansible_host=192.168.122.169
+cluster1_worker ansible_host=192.168.122.97
+cluster2_master ansible_host=192.168.122.131
+
+[rancher_upstream]
+cluster1_master
+cluster1_worker
+
+[cluster1]
+cluster1_master
+cluster1_worker
+
+[cluster2]
+cluster2_master
+
+[all:vars]
+ansible_user=root
+ansible_password=linux
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'

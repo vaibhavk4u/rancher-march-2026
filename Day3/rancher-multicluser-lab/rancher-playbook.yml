@@ -1,0 +1,232 @@
+---
+- name: Phase 1 - Install RKE2 and Rancher with Self-Signed Certs
+  hosts: rancher_upstream
+  become: true
+  tasks:
+    - name: Prepare Ubuntu (Disable Swap and Firewall)
+      shell: |
+        ufw disable
+        swapoff -a
+        sed -i '/swap/d' /etc/fstab
+      changed_when: false
+
+    - name: Install RKE2 Server
+      shell: curl -sfL https://get.rke2.io | sh -
+
+    - name: Start RKE2 Service
+      systemd:
+        name: rke2-server
+        state: started
+        enabled: yes
+
+    - name: Wait for RKE2 Kubeconfig
+      wait_for:
+        path: /etc/rancher/rke2/rke2.yaml
+        timeout: 600 
+
+    - name: Link RKE2 Binaries
+      file:
+        src: "/var/lib/rancher/rke2/bin/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        state: link
+      loop: [ 'kubectl', 'crictl' ]
+
+    - name: Install Helm
+      shell: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Add Jetstack Helm Repo
+      shell: |
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+      
+    - name: Install Cert-Manager
+      shell: |
+        helm upgrade --install cert-manager jetstack/cert-manager \
+          --namespace cert-manager --create-namespace \
+          --set installCRDs=true \
+          --kubeconfig /etc/rancher/rke2/rke2.yaml
+
+    - name: Wait for Cert-Manager CRDs
+      shell: "kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml wait --for=condition=Established crd/issuers.cert-manager.io --timeout=60s"
+      register: crd_check
+      until: crd_check.rc == 0
+      retries: 10
+      delay: 5
+
+    # --- THE "PATIENT" INGRESS WAIT LOGIC ---
+    - name: Wait for RKE2 Ingress HelmChart to appear
+      shell: "kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml get helmcharts.helm.cattle.io rke2-ingress-nginx -n kube-system"
+      register: hc_check
+      until: hc_check.rc == 0
+      retries: 50
+      delay: 10
+
+    - name: Wait for Ingress Controller Deployment to appear
+      shell: "kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml get deployment rke2-ingress-nginx-controller -n kube-system"
+      register: deploy_check
+      until: deploy_check.rc == 0
+      retries: 100
+      delay: 15
+
+    - name: Wait for Ingress Controller Rollout to complete
+      shell: "kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml rollout status deployment rke2-ingress-nginx-controller -n kube-system --timeout=300s"
+
+    # --- RANCHER INSTALLATION ---
+    - name: Add Rancher Helm Repo
+      shell: |
+        helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+        helm repo update
+
+    - name: Install Rancher with Private CA
+      shell: |
+        helm upgrade --install rancher rancher-latest/rancher \
+          --namespace cattle-system --create-namespace \
+          --set hostname=rancher.tektutor.org \
+          --set bootstrapPassword=admin-password \
+          --set replicas=1 \
+          --set ingress.tls.source=rancher \
+          --kubeconfig /etc/rancher/rke2/rke2.yaml
+
+- name: Phase 2 - Setup Downstream Cluster 1 (Master + Worker)
+  hosts: cluster1
+  become: true
+  tasks:
+    - name: Prepare Ubuntu
+      shell: ufw disable && swapoff -a && sed -i '/swap/d' /etc/fstab
+      changed_when: false
+
+    - name: Install RKE2 Server on Master
+      when: "'cluster1_master' in group_names"
+      shell: curl -sfL https://get.rke2.io | sh -
+
+    - name: Start RKE2 Server on Master
+      when: "'cluster1_master' in group_names"
+      systemd:
+        name: rke2-server
+        state: started
+        enabled: yes
+
+    - name: Get Node Token from Master
+      when: "'cluster1_master' in group_names"
+      slurp:
+        src: /var/lib/rancher/rke2/server/node-token
+      register: master_node_token
+
+    - name: Configure Worker Node
+      when: "'cluster1_worker' in group_names"
+      block:
+        - name: Create RKE2 config directory
+          file:
+            path: /etc/rancher/rke2
+            state: directory
+
+        - name: Write Worker Config
+          copy:
+            dest: /etc/rancher/rke2/config.yaml
+            content: |
+              server: https://{{ hostvars['cluster1-master']['ansible_host'] }}:9345
+              token: {{ hostvars['cluster1-master']['master_node_token']['content'] | b64decode | trim }}
+
+        - name: Install RKE2 Agent
+          shell: curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+
+        - name: Start RKE2 Agent
+          systemd:
+            name: rke2-agent
+            state: started
+            enabled: yes
+
+- name: Phase 3 - Setup Downstream Cluster 2 (Single Node)
+  hosts: cluster2
+  become: true
+  tasks:
+    - name: Prepare Ubuntu
+      shell: ufw disable && swapoff -a && sed -i '/swap/d' /etc/fstab
+      changed_when: false
+
+    - name: Install RKE2 Server
+      shell: curl -sfL https://get.rke2.io | sh -
+
+    - name: Start RKE2
+      systemd:
+        name: rke2-server
+        state: started
+        enabled: yes
+
+- name: Phase 4 - Configure LDAP Authentication
+  hosts: rancher_upstream
+  become: true
+  tasks:
+    - name: Wait for Rancher API to be responsive
+      uri:
+        url: https://rancher.tektutor.org/v3
+        validate_certs: no
+        status_code: 200
+      register: rancher_api
+      until: rancher_api.status == 200
+      retries: 60
+      delay: 15
+
+    - name: Configure OpenLDAP Auth Provider
+      shell: |
+        curl -k -u "admin:admin-password" \
+        -X POST https://rancher.tektutor.org/v3/openLdapConfigs?action=testAndApply \
+        -H 'Content-Type: application/json' \
+        -d '{
+          "enabled": true,
+          "server": "tektutor.org",
+          "port": 389,
+          "serviceAccountDistinguishedName": "cn=Directory Manager",
+          "serviceAccountPassword": "your-ldap-password",
+          "userSearchBase": "dc=tektutor,dc=org",
+          "groupSearchBase": "dc=tektutor,dc=org",
+          "testUsername": "jegan",
+          "testPassword": "your-user-password"
+        }'
+      ignore_errors: yes
+
+- name: Phase 5 - Configure HAProxy Load Balancer
+  hosts: lb
+  become: true
+  tasks:
+    - name: Install HAProxy
+      apt:
+        name: haproxy
+        state: present
+        update_cache: yes
+
+    - name: Configure HAProxy for Rancher (TCP Pass-through)
+      copy:
+        dest: /etc/haproxy/haproxy.cfg
+        content: |
+          global
+              log /dev/log local0
+              log /dev/log local1 notice
+              user haproxy
+              group haproxy
+              daemon
+
+          defaults
+              log     global
+              mode    tcp
+              option  tcplog
+              timeout connect 5000
+              timeout client  50000
+              timeout server  50000
+
+          frontend rancher_https
+              bind *:443
+              mode tcp
+              default_backend rancher_nodes
+
+          backend rancher_nodes
+              mode tcp
+              balance roundrobin
+              server rancher-vm {{ hostvars['rancher-vm']['ansible_host'] }}:443 check
+      notify: Restart HAProxy
+
+  handlers:
+    - name: Restart HAProxy
+      systemd:
+        name: haproxy
+        state: restarted

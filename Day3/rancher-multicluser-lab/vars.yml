@@ -1,0 +1,26 @@
+vms:
+  - name: rancher-vm
+    memory: 8192
+    vcpus: 4
+    disk: 20
+    ip: 192.168.122.212
+  - name: cluster1-master
+    memory: 4096
+    vcpus: 4
+    disk: 20
+    ip: 192.168.122.111
+  - name: cluster1-worker
+    memory: 4096
+    vcpus: 4
+    disk: 20
+    ip: 192.168.122.68
+  - name: cluster2-master
+    memory: 4096
+    vcpus: 4
+    disk: 20
+    ip: 192.168.122.83
+  - name: lb-vm
+    memory: 4096
+    vcpus: 2
+    disk: 20
+    ip: 192.168.122.61

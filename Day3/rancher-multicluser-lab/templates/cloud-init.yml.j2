@@ -1,0 +1,36 @@
+#cloud-config
+hostname: {{ outer_item.hostname }}
+fqdn: {{ outer_item.hostname }}
+manage_etc_hosts: true
+
+# Set the timezone (optional but helpful for logs)
+timezone: UTC
+
+# Allow root login via SSH for your lab automation
+ssh_pwauth: True
+disable_root: false
+
+users:
+  - name: root
+    ssh-authorized-keys:
+      - "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+
+# Growth of the root partition to fill the 20GB disk
+growpart:
+  mode: auto
+  devices: ['/']
+
+# Packages required for the next steps (Rancher/RKE2)
+packages:
+  - sudo
+  - curl
+  - vim
+  - tar
+  - iptables
+  - iscsi-initiator-utils # Necessary for Longhorn/Rancher storage later
+
+runcmd:
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, --now, iscsid ]

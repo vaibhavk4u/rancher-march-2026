@@ -1,0 +1,66 @@
+---
+- name: Phase 1 - Install RKE2 and Rancher on Upstream
+  hosts: rancher_upstream
+  become: true
+  tasks:
+    - name: Install RKE2 Server
+      shell: curl -sfL https://rke2.io | sh -
+    
+    - name: Start RKE2
+      systemd: { name: rke2-server, state: started, enabled: yes }
+
+    - name: Wait for Kubeconfig
+      wait_for: { path: /etc/rancher/rke2/rke2.yaml }
+
+    - name: Install Helm
+      shell: curl https://githubusercontent.com | bash
+
+    - name: Install Rancher
+      shell: |
+        export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+        /usr/local/bin/kubectl apply -f https://github.com
+        /usr/local/bin/helm repo add rancher-latest https://rancher.com
+        /usr/local/bin/helm repo update
+        /usr/local/bin/helm install rancher rancher-latest/rancher \
+          --namespace cattle-system --create-namespace \
+          --set hostname=rancher.local \
+          --set bootstrapPassword=admin-password
+
+- name: Phase 2 - Setup Downstream Cluster 1 (2 Nodes)
+  hosts: cluster1
+  become: true
+  tasks:
+    - name: Install RKE2 Master
+      when: "'cluster1_master' in group_names"
+      shell: curl -sfL https://rke2.io | sh -
+    
+    - name: Start RKE2 Master
+      when: "'cluster1_master' in group_names"
+      systemd: { name: rke2-server, state: started, enabled: yes }
+
+    - name: Get Token
+      when: "'cluster1_master' in group_names"
+      slurp: { src: /var/lib/rancher/rke2/server/node-token }
+      register: rke2_token
+
+    - name: Join Worker to Cluster 1
+      when: "'cluster1_worker' in group_names"
+      block:
+        - file: path=/etc/rancher/rke2 state=directory
+        - copy:
+            dest: /etc/rancher/rke2/config.yaml
+            content: |
+              server: https://{{ hostvars['cluster1-master']['ansible_host'] }}:9345
+              token: {{ hostvars['cluster1-master']['rke2_token']['content'] | b64decode }}
+        - shell: curl -sfL https://rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+        - systemd: { name: rke2-agent, state: started, enabled: yes }
+
+- name: Phase 3 - Setup Downstream Cluster 2 (Single Node)
+  hosts: cluster2
+  become: true
+  tasks:
+    - name: Install RKE2 Server
+      shell: curl -sfL https://rke2.io | sh -
+    - name: Start RKE2
+      systemd: { name: rke2-server, state: started, enabled: yes }
+

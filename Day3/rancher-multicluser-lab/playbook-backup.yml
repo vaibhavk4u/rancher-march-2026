@@ -1,0 +1,73 @@
+---
+- name: Provision Rancher Lab VMs
+  hosts: localhost
+  become: true
+  vars:
+    base_image: /var/lib/libvirt/images/ubuntu-24.04.iso
+    vm_list:
+      - { name: 'rancher-vm', memory: 8192, vcpus: 4, disk: 20, hostname: 'rancher.tektutor.org' }
+      - { name: 'cluster1-master', memory: 4096, vcpus: 4, disk: 20, hostname: 'cluster1-master.tektutor.org' }
+      - { name: 'cluster1-worker', memory: 4096, vcpus: 4, disk: 20, hostname: 'cluster1-worker.tektutor.org' }
+      - { name: 'cluster2-master', memory: 4096, vcpus: 4, disk: 20, hostname: 'cluster2-master.tektutor.org' }
+      - { name: 'lb-vm', memory: 4096, vcpus: 2, disk: 20, hostname: 'lb.tektutor.org' }
+
+  tasks:
+    - name: Ensure required packages are installed
+      dnf:
+        name: [qemu-kvm, libvirt, virt-install, genisoimage]
+        state: present
+
+    - name: Cleanup existing VMs (Fresh Start)
+      shell: |
+        virsh destroy {{ vm.name }} || true
+        virsh undefine {{ vm.name }} --remove-all-storage || true
+      loop: "{{ vm_list }}"
+      loop_control:
+        loop_var: vm
+      failed_when: false
+
+    - name: Create cloud-localds wrapper
+      copy:
+        dest: /usr/local/bin/cloud-localds
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          genisoimage -output "$1" -volid cidata -joliet -rock "$2"
+
+    - name: Create empty qcow2 disks
+      command: "qemu-img create -f qcow2 /var/lib/libvirt/images/{{ vm.name }}.qcow2 {{ vm.disk }}G"
+      loop: "{{ vm_list }}"
+      loop_control:
+        loop_var: vm
+
+    - name: Render cloud-init template
+      template:
+        src: templates/cloud-init.yml.j2
+        dest: "/tmp/{{ vm.name }}-userdata"
+      loop: "{{ vm_list }}"
+      loop_control:
+        loop_var: vm
+
+    - name: Generate cloud-init ISO
+      command: "cloud-localds /var/lib/libvirt/images/{{ vm.name }}-cloudinit.iso /tmp/{{ vm.name }}-userdata"
+      loop: "{{ vm_list }}"
+      loop_control:
+        loop_var: vm
+
+    - name: Create and start VMs
+      shell: >
+        virt-install
+        --name {{ vm.name }}
+        --memory {{ vm.memory }}
+        --vcpus {{ vm.vcpus }}
+        --disk /var/lib/libvirt/images/{{ vm.name }}.qcow2,device=disk,bus=virtio
+        --cdrom {{ base_image }}
+        --disk /var/lib/libvirt/images/{{ vm.name }}-cloudinit.iso,device=cdrom
+        --os-variant ubuntu24.04
+        --network network=default
+        --graphics none
+        --console pty,target_type=serial
+      loop: "{{ vm_list }}"
+      loop_control:
+        loop_var: vm
+        label: "{{ vm.name }}"
