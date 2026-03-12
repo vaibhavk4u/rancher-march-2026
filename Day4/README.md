@@ -28,4 +28,28 @@ kubectl label clusters.management.cattle.io c-j2759 env=prod project=tektutor --
 kubectl get clusters.management.cattle.io -L env,project
 ```
 <img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/deb8067a-f720-40ab-a325-ae0dc977d57f" />
-<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/45901bc3-9548-4fc0-87c9-4d73eb0b6c38" />
+
+Let's add the GitOps to Fleet
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/49cfb179-6437-4910-9a7d-6582e31b9b45" />
+Create Git Repo and Click Next
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/07effce3-562a-4d88-87e8-8da0956607ff" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/ff514994-4855-4253-afa7-7ef561d64b0b" />
+Click Next
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/24410595-0ddb-46cd-984c-fff252fbda61" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/7b42b5b0-a3e1-4e6b-b8cb-7a9b7eb3f2c1" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/56e0d61d-9364-4c25-8015-c214dd173cbb" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/559da9a0-912c-4490-bb9f-32a851fe5cf7" />
+
+I pushed the nginx deployment manifest(yaml) file to my github repo
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/2a6ec200-4932-41c9-a92b-e66d0e8b3170" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/29b21953-1b46-4328-995d-096b5d4381a3" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/f69fd424-8bfa-4863-87a7-c0e4bf7e4076" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/bf8f59f4-c6c6-4036-9d9b-697a80706831" />
+
+Making sure our cluster1 and cluster2 rancher agent is running
+```
+kubectl logs -f -n cattle-system -l app=cattle-cluster-agent
+```
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/7e990f6f-73b0-4275-ba7c-2a323abac13c" />
+<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/46ccf8f1-d96f-4b8e-a408-9820cfeec297" />
+
