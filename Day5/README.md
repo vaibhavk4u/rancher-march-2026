@@ -1,6 +1,6 @@
 # Day 5
 
-## Lab - Setup Rancher Upstream cluster with Cillium and Traefic Ingress Controller
+## Lab - Setup Rancher Upstream cluster with Cillium and Traefik Ingress Controller
 
 #### Note
 <pre>
@@ -331,7 +331,7 @@ disable:
 EOF
 ```
 
-#### Enable Traefic - Create this file /var/lib/rancher/rke2/server/manifests/traefik-install.yaml
+#### Enable Traefik - Create this file /var/lib/rancher/rke2/server/manifests/traefik-install.yaml
 ```
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
