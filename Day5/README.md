@@ -273,3 +273,45 @@ kubectl -n cattle-system rollout restart deployment rancher
 
 openssl s_client -connect rancher.tektutor.org:443 -servername rancher.tektutor.org </dev/null | openssl x509 -noout -subject -issuer -
 ```
+
+## Setup Downstream Cluster1
+
+Ensure these kernel modules are loaded
+```
+sudo modprobe overlay
+sudo modprobe br_netfilter
+```
+
+Cilium needs to be able to see bridged traffic
+```
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+sudo sysctl --system
+```
+
+#### Download RKE2 binaries
+```
+curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_METHOD="tar" sh -
+```
+
+#### Start the RKE2 Cluster
+```
+sudo systemctl daemon-reload
+sudo systemctl enable rke2-server.service
+sudo systemctl start rke2-server.service
+sudo systemctl status rke2-server.service
+sudo rke2 server status
+```
+
+#### Test the cluster
+```
+mkdir ~/.kube
+sudo cp /etc/rancher/rke2/rke2.yaml $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+chmod 600 $HOME/.kube/config
+sudo ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
+kubectl get pods -A
+```
