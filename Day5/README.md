@@ -90,8 +90,9 @@ Install Rancher
 ```
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.crds.yaml
 kubectl get crds | grep cert-manager
+```
 
-# Install helm
+#### Install helm
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -102,7 +103,7 @@ helm repo update
 kubectl create namespace cert-manager
 helm install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v1.14.5
+  --version v1.14.5 \
   --set installCRDs=false
 
 kubectl get pods -n cert-manager
@@ -121,23 +122,92 @@ helm install rancher rancher-latest/rancher \
 kubectl get pods -n cattle-system
 kubectl get ingress -n cattle-system
 ```
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/806159f3-ffae-4603-83cd-49a5ce46dc99" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9297fe50-44c3-4624-aea4-9d29b68b3346" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ebc9a19f-4c3b-4388-93a1-c2dab94db541" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/648a75a8-c0ea-458d-bed6-72daebe82794" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/64c84215-5a4a-4051-bf14-8c2851bca21e" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/bd7ab1a8-2455-4fee-9b63-2676caf4b729" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/82dce73d-9595-4c18-915c-b88bd02aa5e5" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9cbb5bfd-1425-42bd-9be2-d6a64ddc4f98" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/644d93a5-94ed-4812-93a1-597268f4b293" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ceeae279-5cec-4f35-a053-d09f5a33beed" />
-<img width="1911" height="1124" alt="image" src="https://github.com/user-attachments/assets/2e9aa8df-5f90-49fc-94a9-07db32bf6cb3" />
-<img width="1911" height="1124" alt="image" src="https://github.com/user-attachments/assets/f7607626-11f0-485d-8a3c-db13db21f876" />
-<img width="1911" height="1124" alt="image" src="https://github.com/user-attachments/assets/dc01dffa-b9eb-45e9-9531-f376fd0c5647" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fe35a603-6cb8-4042-8082-fd7e66804bbc" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/f1e19583-2456-45aa-84c3-548a742d000e" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/6611c28a-bdee-4f96-81b6-2deee56dd49f" />
+
+Make sure the rancher vm IP is added to your host machine /etc/hosts before accessing the Rancher Webconsole
+```
+echo "192.168.127.2 rancher.tektutor.org" >> /etc/hosts
+cat /etc/hosts
+```
 
 Accessing your Rancher Webconsole
 <pre>
 https://rancher.tektutor.org  
 </pre>
 
+Generate a private key
 ```
+sudo mkdir -p /etc/rancher/ssl
+sudo openssl genrsa -out /etc/rancher/ssl/rancher.key 4096
+```
+
+Generate the self-signed certificate
+```
+sudo tee /etc/rancher/ssl/rancher-openssl.cnf > /dev/null <<EOF
+[ req ]
+default_bits       = 4096
+prompt             = no
+default_md         = sha256
+distinguished_name = dn
+req_extensions     = req_ext
+
+[ dn ]
+C  = IN
+ST = TN
+L  = Hosur
+O  = TekTutor
+OU = IT
+CN = rancher.tektutor.org
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = rancher.tektutor.org
+EOF
+```
+
+Generate self-signed certificate
+```
+sudo openssl req -x509 -nodes -days 365 \
+ -key /etc/rancher/ssl/rancher.key \
+ -out /etc/rancher/ssl/rancher.crt \
+ -config /etc/rancher/ssl/rancher-openssl.cnf \
+ -extensions req_ext
+
+# Verify the certificate
+openssl x509 -text -noout -in /etc/rancher/ssl/rancher.crt
+```
+
+Replace self-signed certificate in rancher cluster
+```
+ls -l /etc/rancher/ssl/
+sudo cp /etc/rancher/ssl/rancher.crt /etc/rancher/ssl/tls.crt
+sudo cp /etc/rancher/ssl/rancher.key /etc/rancher/ssl/tls.key
+
+sudo mkdir -p /etc/rancher/rke2/ssl
+sudo cp /etc/rancher/ssl/rancher.crt /etc/rancher/rke2/ssl/tls.crt
+sudo cp /etc/rancher/ssl/rancher.key /etc/rancher/rke2/ssl/tls.key
+sudo chown root:root /etc/rancher/rke2/ssl/tls.*
+sudo chmod 600 /etc/rancher/rke2/ssl/tls.key
+
+kubectl -n cattle-system rollout restart deployment rancher
+kubectl -n cattle-system create secret tls tls-rancher \
+  --cert=/etc/rancher/rke2/ssl/tls.crt \
+  --key=/etc/rancher/rke2/ssl/tls.key \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl -n cattle-system patch ingress rancher \
+  --type='merge' \
+  -p '{"spec":{"tls":[{"hosts":["rancher.tektutor.org"],"secretName":"tls-rancher"}]}}'
+
+kubectl -n cattle-system rollout restart deployment rancher
+
+openssl s_client -connect rancher.tektutor.org:443 -servername rancher.tektutor.org </dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
+
+sudo systemctl restart rke2-server
+sudo journalctl -u rancher-system-agent -f
+```
+
