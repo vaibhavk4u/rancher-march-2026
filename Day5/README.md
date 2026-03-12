@@ -1,33 +1,115 @@
 # Day 5
 
-## Info - Setup a rancher cluster with Cilium and Traefic Ingress Controller
+## Lab - Setup Rancher Upstream cluster with Cillium and Traefic Ingress Controller
 
-Note
+#### Note
 <pre>
-- By default, RKE2 ships with Canal (Calico + Flannel) and Traefik
-- In our cluster setup, we will be using Cilium in the place of Canal
+- Inspite of my laptop has got 24 CPU Cores, 64 GB RAM and 1 TB SSD I was facing disk full issues
+- Root cause - KVM uses /var/lib/libvirt/images to store all KVM VM disk images
+- My /var parition is just 70GB, hence when I create just 3~4 VMs it reports no space left.
+- My /home parition has 850GB
+- Hence, I had configured my KVM to use /home/kvm-images as the KVM shared pool to workaround the issue.
+- The reason I'm explain this to you :) is you shall continue using /var/lib/libvirt/images folder
 </pre>
 
-Create a lightweight VM using podman
+#### Let's create 3 Disk images
 ```
-podman machine init rancher --cpus 4 --memory 8192 --disk-size 50
-podman machine start rancher
-podman machine ssh rancher
-sudo hostnamectl set-hostname rancher.tektutor.org
-hostname
+sudo qemu-img create -f qcow2 -b /home/kvm-images/ubuntu-base.img -F qcow2 /home/kvm-images/rancher-server.qcow2 50G
+sudo qemu-img create -f qcow2 -b /home/kvm-images/ubuntu-base.img -F qcow2 /home/kvm-images/cluster1-node.qcow2  50G
+sudo qemu-img create -f qcow2 -b /home/kvm-images/ubuntu-base.img -F qcow2 /home/kvm-images/cluster2-node.qcow2  50G
 ```
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/38d19e7a-57c4-400a-a9f0-cbcf80e6a4bb" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/06f15de2-6090-4eb3-a4d1-6a50021ea6c0" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/49b98704-0cc1-4690-b0d9-6f82fbde6e4d" />
 
-
-Create configuration directories
+#### Let's create the cloud-init file in current directory
 ```
+cat <<EOF > cloud-init.yaml
+#cloud-config
+user: root
+password: root
+chpasswd: { expire: False }
+ssh_pwauth: True
+runcmd:
+  - sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - systemctl restart ssh
+EOF
+```
+
+#### Let's create the rancher vm
+```
+sudo virt-install \
+  --name rancher-server \
+  --memory 8192 \
+  --vcpus 4 \
+  --disk /home/kvm-images/rancher-server.qcow2 \
+  --import \
+  --os-variant ubuntu24.04 \
+  --network bridge=virbr0 \
+  --graphics none \
+  --noautoconsole \
+  --cloud-init user-data=./cloud-init.yaml
+```
+
+#### Let's create the cluster1 vm
+```
+sudo virt-install \
+  --name cluster1 \
+  --memory 8192 \
+  --vcpus 4 \
+  --disk /home/kvm-images/cluster1-node.qcow2 \
+  --import \
+  --os-variant ubuntu24.04 \
+  --network bridge=virbr0 \
+  --graphics none \
+  --noautoconsole \
+  --cloud-init user-data=./cloud-init.yaml
+```
+
+#### Let's create the cluster2 vm
+```
+sudo virt-install \
+  --name cluster2 \
+  --memory 8192 \
+  --vcpus 4 \
+  --disk /home/kvm-images/cluster2-node.qcow2 \
+  --import \
+  --os-variant ubuntu24.04 \
+  --network bridge=virbr0 \
+  --graphics none \
+  --noautoconsole \
+  --cloud-init user-data=./cloud-init.yaml
+```
+
+#### List all the KVM virtual machines
+```
+sudo virsh list --all
+```
+
+#### In the host machine /etc/hosts
+```
+192.168.122.247 rancher
+192.168.122.156 cluster1
+192.168.122.123 cluster2
+
+192.168.122.247 rancher.tektutor.org
+192.168.122.156 cluster1.tektutor.org
+192.168.122.123 cluster2.tektutor.org
+```
+
+#### In all the 3 VMS, append the below entries at the end of /etc/hosts file
+```
+192.168.122.247 rancher.tektutor.org
+192.168.122.156 cluster1.tektutor.org
+192.168.122.123 cluster2.tektutor.org
+```
+
+#### In the rancher VM
+```
+ssh root@rancher
+
 sudo mkdir -p /etc/rancher/rke2/
 sudo mkdir -p /var/lib/rancher/rke2/server/manifests/
 ```
 
-Define Cluster Configurations
+#### Define Cluster configurations
 ```
 cat <<EOF | sudo tee /etc/rancher/rke2/config.yaml
 cni: cilium
@@ -35,7 +117,7 @@ write-kubeconfig-mode: "0644"
 EOF
 ```
 
-Enable Hubble
+#### Enable Hubble
 ```
 cat <<EOF | sudo tee /var/lib/rancher/rke2/server/manifests/rke2-cilium-config.yaml
 apiVersion: helm.cattle.io/v1
@@ -54,12 +136,12 @@ spec:
 EOF
 ```
 
-Download RKE2 binaries
+#### Download RKE2 binaries
 ```
 curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_METHOD="tar" sh -
 ```
 
-Start the RKE2 Cluster
+#### Start the RKE2 Cluster
 ```
 sudo systemctl daemon-reload
 sudo systemctl enable rke2-server.service
@@ -67,13 +149,8 @@ sudo systemctl start rke2-server.service
 sudo systemctl status rke2-server.service
 sudo rke2 server status
 ```
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/b2a77898-8bb6-4d64-8285-c99ba446d5a7" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/4e18cd88-ae73-4fdd-99de-a8e17ad16c11" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/daac684a-afaf-4b49-a2b3-496de60559cc" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/7d3d1764-ff40-49a3-8480-451195f19fc9" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/7d6e138b-eb9b-49be-8f39-3aa5cd4f242f" />
 
-Test the cluster
+#### Test the cluster
 ```
 mkdir ~/.kube
 sudo cp /etc/rancher/rke2/rke2.yaml $HOME/.kube/config
@@ -82,7 +159,6 @@ chmod 600 $HOME/.kube/config
 sudo ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
 kubectl get pods -A
 ```
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/f7ec8048-5c19-440f-be37-5707dca37d2f" />
 
 ## Let's install Rancher from the Master node 
 ```
@@ -122,28 +198,24 @@ kubectl get pods -n cattle-system
 kubectl get ingress -n cattle-system
 ```
 
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/fe35a603-6cb8-4042-8082-fd7e66804bbc" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/f1e19583-2456-45aa-84c3-548a742d000e" />
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/6611c28a-bdee-4f96-81b6-2deee56dd49f" />
-
-Make sure the rancher vm IP is added to your host machine /etc/hosts before accessing the Rancher Webconsole
+#### Make sure the rancher vm IP is added to your host machine /etc/hosts before accessing the Rancher Webconsole
 ```
 echo "192.168.127.2 rancher.tektutor.org" >> /etc/hosts
 cat /etc/hosts
 ```
 
-Accessing your Rancher Webconsole
+#### Accessing your Rancher Webconsole
 <pre>
 https://rancher.tektutor.org  
 </pre>
 
-Generate a private key
+#### Generate a private key
 ```
 sudo mkdir -p /etc/rancher/ssl
 sudo openssl genrsa -out /etc/rancher/ssl/rancher.key 4096
 ```
 
-Generate the self-signed certificate
+#### Generate the self-signed certificate
 ```
 sudo tee /etc/rancher/ssl/rancher-openssl.cnf > /dev/null <<EOF
 [ req ]
@@ -169,7 +241,7 @@ DNS.1 = rancher.tektutor.org
 EOF
 ```
 
-Generate self-signed certificate
+#### Generate self-signed certificate
 ```
 sudo openssl req -x509 -nodes -days 365 \
  -key /etc/rancher/ssl/rancher.key \
@@ -181,7 +253,7 @@ sudo openssl req -x509 -nodes -days 365 \
 openssl x509 -text -noout -in /etc/rancher/ssl/rancher.crt
 ```
 
-Replace self-signed certificate in rancher cluster
+#### Replace self-signed certificate in rancher cluster
 ```
 ls -l /etc/rancher/ssl/
 sudo cp /etc/rancher/ssl/rancher.crt /etc/rancher/ssl/tls.crt
@@ -205,23 +277,5 @@ kubectl -n cattle-system patch ingress rancher \
 
 kubectl -n cattle-system rollout restart deployment rancher
 
-openssl s_client -connect rancher.tektutor.org:443 -servername rancher.tektutor.org </dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
-
-sudo systemctl restart rke2-server
+openssl s_client -connect rancher.tektutor.org:443 -servername rancher.tektutor.org </dev/null | openssl x509 -noout -subject -issuer -
 ```
-
-In order to access the rancher webconsole from hostname open a tunnel (Do not close this terminal until you are done with rancher)
-```
-ssh -i ~/.local/share/containers/podman/machine/machine -p 34131 -N -L 8443:localhost:443 core@127.0.0.1
-```
-<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/77f20878-6187-4bd5-bf6a-1ec13afe48b2" />
-
-
-Now you may access the rancher webconsole from host machine browser
-```
-https://rancher.tektutor.org:8443
-```
-<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/962d2f7d-2da5-4193-a380-215d02533e88" />
-<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/5fdce2b8-89a0-4562-8df2-378085242757" />
-<img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/7520bdb0-093c-4e0d-9bba-d8030a2bb84e" />
-
