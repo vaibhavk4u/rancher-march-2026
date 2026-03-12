@@ -83,3 +83,61 @@ sudo ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
 kubectl get pods -A
 ```
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/f7ec8048-5c19-440f-be37-5707dca37d2f" />
+
+Install Rancher
+```
+## Let's install Rancher from the Master node 
+```
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.crds.yaml
+kubectl get crds | grep cert-manager
+
+# Install helm
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+chmod 700 get_helm.sh
+./get_helm.sh
+
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+kubectl create namespace cert-manager
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --version v1.14.5
+  --set installCRDs=false
+
+kubectl get pods -n cert-manager
+
+kubectl create namespace cattle-system
+
+helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+helm repo update
+
+helm install rancher rancher-latest/rancher \
+  --namespace cattle-system \
+  --set hostname=rancher.tektutor.org \
+  --set bootstrapPassword=admin \
+  --set ingress.tls.source=secret
+
+kubectl get pods -n cattle-system
+kubectl get ingress -n cattle-system
+```
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/806159f3-ffae-4603-83cd-49a5ce46dc99" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9297fe50-44c3-4624-aea4-9d29b68b3346" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ebc9a19f-4c3b-4388-93a1-c2dab94db541" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/648a75a8-c0ea-458d-bed6-72daebe82794" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/64c84215-5a4a-4051-bf14-8c2851bca21e" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/bd7ab1a8-2455-4fee-9b63-2676caf4b729" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/82dce73d-9595-4c18-915c-b88bd02aa5e5" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9cbb5bfd-1425-42bd-9be2-d6a64ddc4f98" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/644d93a5-94ed-4812-93a1-597268f4b293" />
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ceeae279-5cec-4f35-a053-d09f5a33beed" />
+<img width="1911" height="1124" alt="image" src="https://github.com/user-attachments/assets/2e9aa8df-5f90-49fc-94a9-07db32bf6cb3" />
+<img width="1911" height="1124" alt="image" src="https://github.com/user-attachments/assets/f7607626-11f0-485d-8a3c-db13db21f876" />
+<img width="1911" height="1124" alt="image" src="https://github.com/user-attachments/assets/dc01dffa-b9eb-45e9-9531-f376fd0c5647" />
+
+Accessing your Rancher Webconsole
+<pre>
+https://rancher.tektutor.org  
+</pre>
+
+```
