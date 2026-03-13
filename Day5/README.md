@@ -530,3 +530,22 @@ python3 ./createproject.py
 ```
 <img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/06e09117-2de2-4b6a-879e-dc29da58a756" />
 <img width="1911" height="1111" alt="image" src="https://github.com/user-attachments/assets/cde1aed6-a727-41f2-a685-de6e956583bc" />
+
+
+## Lab - Prometheus & Grafana Dashboard
+
+Navigate to Clusters --> Local --> Monitoring
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/c0bf0894-9646-4d70-95ee-f2393ffe811a" />
+
+Click Grafana
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/21a9e12d-8929-42ec-9dd6-a27563bec896" />
+
+Click Dashboard --> Select AlertManager Overview
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/34048afe-ce98-44fc-9042-fbb264b1e860" />
+
+Click Dashboard -> Select Kubelet
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/ddf95d15-0743-4c2e-bfc3-009f18c1a91c" />
+
+Click Dashboard --> Select 
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/2575a4a7-5a34-4b1c-a76e-d3457264ad23" />
+
